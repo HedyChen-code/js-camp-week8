@@ -57,8 +57,9 @@ async function updateProduct(cartId, quantity) {
   // 回傳格式：{ success: true, data: ... } / { success: false, error: ... }
   const validation = validateCartQuantity(quantity);
   if (!validation.isValid) return { success: false, error: validation.error };
+
   try {
-    const data = await updateCartItem();
+    const data = await updateCartItem(cartId, quantity);
     return { success: true, data };
   } catch (error) {
     return { success: false, error: error.message };
@@ -75,7 +76,7 @@ async function removeProduct(cartId) {
   // 提示：呼叫 deleteCartItem()
   // 回傳格式：{ success: true, data: ... } / { success: false, error: ... }
   try {
-    const data = await deleteCartItem();
+    const data = await deleteCartItem(cartId);
     return { success: true, data };
   } catch (error) {
     return { success: false, error: error.message };
@@ -140,10 +141,10 @@ function displayCart(cart) {
   };
 
   let count = 0;
+  console.log(`購物車內容：`);
+  console.log(`----------------------------------------`);
   cart.carts.forEach(cart => {
     count ++;
-    console.log(`購物車內容：`);
-    console.log(`----------------------------------------`);
     console.log(`${count}. 產品名稱：${cart.product.title}`);
     console.log(`數量：${cart.quantity}`);
     console.log(`單價：NT$ ${formatCurrency(cart.product.price)}`);

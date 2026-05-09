@@ -84,7 +84,7 @@ async function updatePaymentStatus(orderId, isPaid) {
   // 提示：呼叫 updateOrderStatus()
   // 回傳格式：{ success: true, data: ... } / { success: false, error: ... }
   try {
-    const data = await updatePaymentStatus(orderId, isPaid);
+    const data = await updateOrderStatus(orderId, isPaid);
     return { success: true, data };
   } catch (error) {
     return { success: false, error: error.message };
@@ -167,7 +167,7 @@ function displayOrders(orders) {
   // ========================================
   if (!orders || orders.length === 0) {
     console.log(`沒有訂單`);
-    return
+    return;
   };
   let count = 0;
 
@@ -189,7 +189,7 @@ function displayOrders(orders) {
     console.log(`----------------------------------------`);
     console.log(`商品明細：`);
     order.products.forEach(product => {
-      console.log(`  - ${product.title} x ${order.quantity}`);
+      console.log(`  - ${product.title} x ${order.quantity}\n`);
     });
   })
   console.log(`========================================`);

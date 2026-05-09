@@ -13,6 +13,51 @@ const adminApi = axios.create({
   headers: { authorization: ADMIN_TOKEN }
 });
 
+// ========== 客戶端攔截器 ==========
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      const { status } = error.response;
+      if (status === 401) {
+        console.error('[api] 未授權，請重新登入');
+      } else if (status === 404) {
+        console.error('[api] 找不到資源');
+      } else if (status === 500) {
+        console.error('[api] 伺服器錯誤，請稍後再試');
+      } else {
+        console.error('[api] http 錯誤', status);
+      }
+    } else {
+      // 網路斷網或請求未送出
+      console.error('[api] 網路錯誤：', error.message);
+    }
+    return Promise.reject(error);
+  }
+);
+
+// ========== 管理端攔截器 ==========
+adminApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      const { status } = error.response;
+      if (status === 401) {
+        console.error('[adminApi] Token 無效或已過期');
+      } else if (status === 403) {
+        console.error('[adminApi] 權限不足');
+      } else if (status === 404) {
+        console.error('[adminApi] 找不到資源');
+      } else if (status === 500) {
+        console.error('[adminApi] 伺服器錯誤');
+      }
+    } else {
+      console.error('[adminApi]: 網路錯誤', error.message);
+    }
+    return Promise.reject(error);
+  }
+);
+
 // ========== 客戶端 API ==========
 
 /**
@@ -22,12 +67,8 @@ const adminApi = axios.create({
 async function fetchProducts() {
   // 請實作此函式
   // 回傳 response.data.products
-  try {
-    const response = await api.get('/products');
-    return response.data.products; 
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.get('/products');
+  return response.data.products; 
 }
 
 /**
@@ -36,13 +77,9 @@ async function fetchProducts() {
  */
 async function fetchCart() {
   // 請實作此函式
-  try {
-    const response = await api.get('/carts');
-    const data =  response.data;
-    return { carts: data.carts, total: data.total, finalTotal: data.finalTotal };
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.get('/carts');
+  const data =  response.data;
+  return { carts: data.carts, total: data.total, finalTotal: data.finalTotal };
 }
 
 /**
@@ -53,18 +90,14 @@ async function fetchCart() {
  */
 async function addToCart(productId, quantity) {
   // 請實作此函式
-  try {
-    const data = {
-      data: {
-        productId,
-        quantity
-      }
-    };
-    const response = await api.post('/carts', data);
+  const data = {
+    data: {
+      productId,
+      quantity
+    }
+  };
+  const response = await api.post('/carts', data);
   return response.data;
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -75,18 +108,14 @@ async function addToCart(productId, quantity) {
  */
 async function updateCartItem(cartId, quantity) {
   // 請實作此函式
-  try {
-    const data = {
-      data: {
-        id: cartId,
-        quantity
-      }
-    };
-    const response = await api.patch('/carts', data);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const data = {
+    data: {
+      id: cartId,
+      quantity
+    }
+  };
+  const response = await api.patch('/carts', data);
+  return response.data;
 }
 
 /**
@@ -96,12 +125,8 @@ async function updateCartItem(cartId, quantity) {
  */
 async function deleteCartItem(cartId) {
   // 請實作此函式
-  try {
-    const response = await api.delete(`/carts/${cartId}`);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.delete(`/carts/${cartId}`);
+  return response.data;
 }
 
 /**
@@ -110,12 +135,8 @@ async function deleteCartItem(cartId) {
  */
 async function clearCart() {
   // 請實作此函式
-  try {
-    const response = await api.delete('/carts');
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.delete('/carts');
+  return response.data;
   
 }
 
@@ -126,23 +147,19 @@ async function clearCart() {
  */
 async function createOrder(userInfo) {
   // 請實作此函式
-  try {
-    const data = {
-      data: {
-        user: {
-          name: userInfo.name,
-          tel: userInfo.tel,
-          email: userInfo.email,
-          address: userInfo.address,
-          payment: userInfo.payment
-        }
+  const data = {
+    data: {
+      user: {
+        name: userInfo.name,
+        tel: userInfo.tel,
+        email: userInfo.email,
+        address: userInfo.address,
+        payment: userInfo.payment
       }
-    };
-    const response = await api.post('/orders', data);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+    }
+  };
+  const response = await api.post('/orders', data);
+  return response.data;
 }
 
 // ========== 管理員 API ==========
@@ -161,12 +178,8 @@ async function createOrder(userInfo) {
  */
 async function fetchOrders() {
   // 請實作此函式
-  try {
-    const response = await adminApi.get('/orders');
-    return response.data.orders;
-  } catch (error) {
-    throw error;
-  }
+  const response = await adminApi.get('/orders');
+  return response.data.orders;
 }
 
 /**
@@ -177,18 +190,14 @@ async function fetchOrders() {
  */
 async function updateOrderStatus(orderId, isPaid) {
   // 請實作此函式
-  try {
-    const data = {
-      data: {
-        id: orderId,
-        paid: isPaid
-      }
-    };
-    const response = await adminApi.put('/orders', data);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const data = {
+    data: {
+      id: orderId,
+      paid: isPaid
+    }
+  };
+  const response = await adminApi.put('/orders', data);
+  return response.data;
 }
 
 /**
@@ -198,12 +207,8 @@ async function updateOrderStatus(orderId, isPaid) {
  */
 async function deleteOrder(orderId) {
   // 請實作此函式
-  try {
-    const response = await adminApi.delete(`/orders/${orderId}`);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await adminApi.delete(`/orders/${orderId}`);
+  return response.data;
 }
 
 module.exports = {
